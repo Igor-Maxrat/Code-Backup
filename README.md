@@ -1,3 +1,4 @@
+<pre>
 Description...
 
 Hello friends! I developed a program designed to solve a logical formula like (A | B), or (A & (B | C)), by printing a truth table in
@@ -14,9 +15,13 @@ Ignore...
       due to bad inputs.
 
 Run Code...
+
       ./a.out '(A | B)'
+
       ./a.out '(A !| B)'
+      
       ./a.out '(A |! B)'
+      
       ./a.out '(A !|! B)'
 
 Input Instructions...
@@ -29,12 +34,18 @@ Input Instructions...
 
 Output example...
 ./a.out '(A &! (C | D))'
-A             11110000      
-C             11001100      
-D             10101010      
-(C | D)       11101110 CD  |
-(A &! (C | D))00010000 A  !&
-(A &! (C | D))11101111 A  !&            //Negation of the top level formula always included
+
+A			11110000      
+
+C			11001100      
+
+D			10101010      
+
+(C | D)		11101110 CD  |
+
+(A &! (C | D))	00010000 A  !&
+
+(A &! (C | D))	11101111 A  !&            //Negation of the top level formula always included
 
 Improve My Code, Or Make Something Better...
       Feel free to make your own versions better and faster. I have much to learn, so please share what you've found!
@@ -53,14 +64,24 @@ execution. Thus, not all errors will be displayed on the output, but only those 
 Codes...
 
 Code 1. Unrecognized symbol
+
 Code 2. The closing parenthesis of the top level formula came too early
+
 Code 4. The input string does not start with an opening parenthesis
+
 Code 8. The input string does not end with a closing parenthesis
+
 Code 16. The number of '(' does not equal the number of ')'
+
 Code 32. A logical symbol was placed somewhere other than between two formulas 'A', 'B', 'C', '()'
+
 Code 64. Negations were present '!' that did not come immediately before or after a logical symbol
+
 Code 128. The number of logical connectives in a formula is not 1
+
 Code 256. The number of sub-formulae in a formula is not 2.
 
 License: Open Source
+
 Liability: Use at your own risk and responsibility!
+</pre>
