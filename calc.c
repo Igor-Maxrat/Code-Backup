@@ -1,25 +1,33 @@
 #include<stdio.h>
+#include<stdlib.h>
 #include<string.h>
-void LetterInit(int number_list[], char formula[],  char letter_list[], int *letter_number, int *row_size);
+void FormulaVerify(char formula[]);
+void LetterInit(int number_list[], char formula[],  char letter_list[], int *letter_number, int *row_size, int *row_number);
+void TruthAllocate(char **truth_table, int *row_space, int *row_size, int *letter_number);
 int TruthInit(int number_list[], char truth_table[], char letter_list[], int letter_number, int row_size);
 void FormulaWrite(char truth_table[], char argv[], int index, int row_size);
 void TableSolver(int number_list[], char truth_table[], int letter_number, int row_size);
 void Logic(char dest[], char src1[], char src2[], char ops[], int truth_length);
 int main(int argc, char *argv[]){
+char *truth_table = NULL;
 int number_list[27] = {[0 ... 26] = 0}; char letter_list[27] = {[0 ... 26] = 0};
-char truth_table[1000] = {[0 ... 998] = ' ', [999] = 0}; int letter_number = 0, row_size = 0, index;
+int letter_number = 0, row_size = 0, row_space = 0, index;
 if(argc != 2) return 0;
-LetterInit(number_list, argv[1], letter_list, &letter_number, &row_size);
+FormulaVerify(argv[argc - 1]);
+LetterInit(number_list, argv[1], letter_list, &letter_number, &row_size, &row_space);
+TruthAllocate(&truth_table, &row_space, &row_size, &letter_number);
 index = TruthInit(number_list, truth_table, letter_list, letter_number, row_size);
 FormulaWrite(truth_table, argv[1], index, row_size);
 TableSolver(number_list, truth_table, letter_number, row_size);
-printf("%s\n", truth_table);
+printf("%s", truth_table);
+free(truth_table);
+truth_table = NULL;
 return 0;}
-void LetterInit(int number_list[], char formula[], char letter_list[], int *letter_number, int *row_size){
-int i, index = 0; char hold;
+void LetterInit(int number_list[], char formula[], char letter_list[], int *letter_number, int *row_size, int *row_number){
+int i, index = 0; char hold; *row_number += 1;
 for(i = 0; formula[i] != 0; i++){
-hold = formula[i]*((formula[i] >= 'A' && formula[i] <= 'Z') || (formula[i] >= 'a' && formula[i] <= 'z'));
-hold -= 32*(hold > 90);
+*row_number += (formula[i] == '(');
+hold = formula[i]*(formula[i] >= 'A' && formula[i] <= 'Z');
 index = (hold - 'A')*(hold >= 'A');
 *letter_number += (hold >= 'A' && letter_list[index] == 0);
 letter_list[index] += hold*(letter_list[index] == 0);
@@ -37,7 +45,6 @@ int truth_half = 1 << letter_number; char truth = 1;
 for(int i = 0; i < letter_number; i++){
 	truth_half /= 2;
 	truth_table[i*row_size] = letter_list[i];
-	truth_table[((i + 1)*row_size) - 1] = '\n';
 	for(int j = 0, truth = 1; j < (1 << letter_number); j++){
 		truth_table[number_list[letter_list[i] - 64] + j] = '0' + truth;
 		truth = truth*(((j + 1) % truth_half) != 0) + (1 - truth)*(((j + 1) % truth_half) == 0);
@@ -53,14 +60,12 @@ max_depth += (current_depth > max_depth);
 }
 for(target_depth = max_depth, max_depth = 6; target_depth > 0; target_depth--){
 	for(current_depth = 0, i = 0; formula[i] != 0; i++){
-		formula[i] += ('A' - 'a')*(formula[i] >= 'a' && formula[i] <= 'z');
 		if(formula[i] == '(')current_depth++;
 		if(current_depth >= target_depth){
 			truth_table[index] = formula[i]; index++; row_diff--;
 		}
 		if(current_depth == target_depth && formula[i] == ')'){
-			index += row_diff; truth_table[index - 1] = '\n'; row_diff = row_size; max_depth = 6;
-			connect_counter = 4;
+			index += row_diff; row_diff = row_size; max_depth = 6; connect_counter = 4;
 		}
 		if(current_depth == target_depth  && formula[i] >= 'A' && formula[i] <= 'Z'){
 			truth_table[index + row_diff - max_depth] = truth_table[index - 1];
@@ -111,4 +116,34 @@ place[0] = src1[i]; place[1] = (~src1[i] & 1) | 48;
 place[2] = src2[i]; place[3] = (~src2[i] & 1) | 48;
 dest[i] = (~place[0 + ops[0] - 32] & 1) | 48 | place[2 + ops[1] - 32];
 }
+return;}
+void FormulaVerify(char formula[]){
+int i, depth, error = 0; int part_depth[100] = {[0 ... 99] = 0};
+for(i = 1, depth = 0; formula[i] != 0 && error == 0; i++){
+	formula[i] += ('A' - 'a')*(formula[i] >= 'a' && formula[i] <= 'z');
+	error += 1*(formula[i] != ' ' && formula[i] != '!' && formula[i] != '>' && formula[i] != '&' && formula[i] != '|' && formula[i] != '(' && formula[i] != ')' && (formula[i] < 'A' || formula[i] > 'Z'));
+	part_depth[(2*depth) + 0] += (formula[i] == '>' || formula[i] == '&' || formula[i] == '|');
+	part_depth[(2*depth) + 1] += (formula[i] == '(' || (formula[i] >= 'A' && formula[i] <= 'Z'));
+	error += 32*((formula[i] == '>' || formula[i] == '&' || formula[i] == '|') && part_depth[(2*depth) + 1] != 1);
+	error += 64*(formula[i] == '!' && formula[i + 1] != '>' && formula[i + 1] != '&' && formula[i + 1] != '|' && formula[i - 1] != '>' && formula[i - 1] != '&' && formula[i - 1] != '|');
+	if(formula[i] == ')'){
+	error += 128 * (part_depth[(2*depth) + 0] != 1);  // connective count
+	error += 256 * (part_depth[(2*depth) + 1] != 2);  //formula count, ( or A,B,C
+	part_depth[(2*depth) + 0] = 0;
+	part_depth[(2*depth) + 1] = 0;
+	}
+	depth += (formula[i] == '(') - (formula[i] == ')');
+	error += 2*(depth == -1 && formula[i + 1] != 0);
+}
+error += 4*(formula[0] != '(') + 8*(formula[i] == 0 && formula[i - 1] != ')') + 16*(formula[i] == 0 && depth != -1);
+if(error != 0){printf("error code is: %d\n", error); exit(0);}
+return;}
+void TruthAllocate(char **truth_table, int *row_space, int *row_size, int *letter_number){
+ *row_space = (*row_size * *letter_number) + (*row_size * *row_space) + 1;
+ *truth_table = malloc(*row_space * sizeof(char));
+ if(*truth_table == NULL){printf("allocation failed, exiting...\n"); exit(0);}
+ *(*truth_table + *row_space - 1) = 0;
+ for(int i = 0; i < *row_space - 1; i++){
+	*(*truth_table + i) = ' ' + ('\n' - ' ')*((i + 1) % *row_size == 0);
+ }
 return;}
